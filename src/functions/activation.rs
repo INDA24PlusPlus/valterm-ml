@@ -1,3 +1,5 @@
+use ndarray::Array1;
+
 pub trait Activation: Clone + Copy + Default {
     fn activate(&self, x: f64) -> f64;
 }
@@ -21,4 +23,11 @@ impl Activation for ReLU {
             0.0
         }
     }
+}
+
+pub fn softmax(x: &Array1<f64>) -> Array1<f64> {
+    let max = x.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let exps = x.map(|v| (v - max).exp());
+    let sum: f64 = exps.iter().sum();
+    exps / sum
 }
