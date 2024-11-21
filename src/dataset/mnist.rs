@@ -51,3 +51,7 @@ pub fn format_label(label: u8) -> Array1<f32> {
 
     arr
 }
+
+pub fn format_labels(labels: &Vec<u8>) -> Vec<Array1<f32>> {
+    labels.iter().map(|&x| format_label(x)).collect()
+}

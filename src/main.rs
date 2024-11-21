@@ -1,32 +1,16 @@
 use std::vec;
 
-use dataset::mnist::Mnist;
+use dataset::mnist::{format_labels, Mnist};
 use functions::activation::{Activation, ActivationType};
-use network::network::{Layer, NeuralNetwork};
+use network::network::{Layer, LayerType, NeuralNetwork};
 use training::backprop::Trainer;
+use util::{create_batch, get_accuracy};
 
 pub mod dataset;
 pub mod functions;
 pub mod network;
 pub mod training;
-
-pub fn get_accuracy(nn: &mut NeuralNetwork, mnist: &Mnist) -> f32 {
-    let mut correct = 0;
-
-    for (inputs, &label) in mnist.test.iter().zip(mnist.test_labels.iter()) {
-        let out = nn.predict(inputs.clone());
-        let guess = out
-            .iter()
-            .position(|&x| x == *out.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap())
-            .unwrap();
-
-        if guess == label as usize {
-            correct += 1;
-        }
-    }
-
-    correct as f32 / mnist.test.len() as f32
-}
+pub mod util;
 
 fn main() {
     let mnist = Mnist::get();
@@ -40,7 +24,14 @@ fn main() {
         Layer::activation(Activation::new(ActivationType::Softmax)),
     ]);
 
-    println!("Accuracy: {}", get_accuracy(&mut nn, &mnist));
+    println!(
+        "Accuracy: {}",
+        get_accuracy(
+            mnist.test.clone(),
+            format_labels(&mnist.test_labels),
+            &mut nn
+        )
+    );
 
     let mut trainer = Trainer::new(&mut nn, 0.01);
 
@@ -52,5 +43,12 @@ fn main() {
 
     trainer.train(mnist.train.clone(), targets, 3);
 
-    println!("Accuracy: {}", get_accuracy(&mut nn, &mnist));
+    println!(
+        "Accuracy: {}",
+        get_accuracy(
+            mnist.test.clone(),
+            format_labels(&mnist.test_labels),
+            &mut nn
+        )
+    );
 }

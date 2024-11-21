@@ -26,43 +26,43 @@ pub struct Layer {
     pub layer_type: LayerType,
 
     // Cache for backpropagation
-    pub inputs: Array1<f32>,
-    pub outputs: Array1<f32>,
+    pub inputs: Array2<f32>,
+    pub outputs: Array2<f32>,
 }
 
 impl Layer {
-    pub fn forward(&mut self, inputs: &Array1<f32>) -> Array1<f32> {
+    pub fn forward(&mut self, inputs: &Array2<f32>) -> Array2<f32> {
         self.inputs = inputs.clone();
         self.outputs = match &self.layer_type {
-            LayerType::Dense { weights, biases } => weights.dot(inputs) + biases,
+            LayerType::Dense { weights, biases } => inputs.dot(weights) + biases,
             LayerType::Activation { activation } => activation.activate(inputs),
         };
         self.outputs.clone()
     }
 
-    pub fn backward(&self, delta: &Array1<f32>) -> Array1<f32> {
+    pub fn backward(&self, delta: &Array2<f32>) -> Array2<f32> {
         match &self.layer_type {
-            LayerType::Dense { weights, .. } => weights.t().dot(delta),
+            LayerType::Dense { weights, .. } => delta.dot(&weights.t().to_owned()),
             LayerType::Activation { activation } => activation.derivative(delta),
         }
     }
 
     pub fn dense(inputs: usize, outputs: usize) -> Layer {
-        let weights = Array2::random((outputs, inputs), Uniform::new(-1.0, 1.0));
+        let weights = Array2::random((inputs, outputs), Uniform::new(-1.0, 1.0));
         let biases = Array1::random(outputs, Uniform::new(-1.0, 1.0));
 
         Layer {
             layer_type: LayerType::Dense { weights, biases },
-            inputs: Array1::zeros(inputs),
-            outputs: Array1::zeros(outputs),
+            inputs: Array2::zeros((0, 0)),
+            outputs: Array2::zeros((0, 0)),
         }
     }
 
     pub fn activation(activation: Activation) -> Layer {
         Layer {
             layer_type: LayerType::Activation { activation },
-            inputs: Array1::zeros(0),
-            outputs: Array1::zeros(0),
+            inputs: Array2::zeros((0, 0)),
+            outputs: Array2::zeros((0, 0)),
         }
     }
 }
@@ -74,7 +74,7 @@ impl NeuralNetwork {
         NeuralNetwork { layers }
     }
 
-    pub fn predict(&mut self, inputs: Array1<f32>) -> Array1<f32> {
+    pub fn predict(&mut self, inputs: Array2<f32>) -> Array2<f32> {
         self.layers
             .iter_mut()
             .fold(inputs, |acc, layer| layer.forward(&acc))
