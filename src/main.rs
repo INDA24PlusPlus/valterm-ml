@@ -16,11 +16,11 @@ fn main() {
     let mnist = Mnist::get();
 
     let mut nn = NeuralNetwork::new(vec![
-        Layer::dense(28 * 28, 10),
+        Layer::dense(28 * 28, 128),
         Layer::activation(Activation::new(ActivationType::ReLU)),
-        Layer::dense(10, 10),
+        Layer::dense(128, 128),
         Layer::activation(Activation::new(ActivationType::ReLU)),
-        Layer::dense(10, 10),
+        Layer::dense(128, 10),
         Layer::activation(Activation::new(ActivationType::Softmax)),
     ]);
 
@@ -33,7 +33,7 @@ fn main() {
         )
     );
 
-    let mut trainer = Trainer::new(&mut nn, 0.01);
+    let mut trainer = Trainer::new(&mut nn, 0.001);
 
     let targets: Vec<_> = mnist
         .train_labels
@@ -41,7 +41,7 @@ fn main() {
         .map(|&x| dataset::mnist::format_label(x))
         .collect();
 
-    trainer.train(mnist.train.clone(), targets, 3);
+    trainer.train(mnist.train.clone(), targets, 50);
 
     println!(
         "Accuracy: {}",
