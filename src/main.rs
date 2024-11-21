@@ -2,9 +2,9 @@ use std::vec;
 
 use dataset::mnist::{format_labels, Mnist};
 use functions::activation::{Activation, ActivationType};
-use network::network::{Layer, LayerType, NeuralNetwork};
+use network::network::{Layer, NeuralNetwork};
 use training::backprop::Trainer;
-use util::{create_batch, get_accuracy};
+use util::get_accuracy;
 
 pub mod dataset;
 pub mod functions;

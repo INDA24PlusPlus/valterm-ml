@@ -25,10 +25,10 @@ impl Activation {
         }
     }
 
-    pub fn derivative(&self, x: &Array2<f32>) -> Array2<f32> {
+    pub fn derivative(&self, x: &Array2<f32>, inputs: &Array2<f32>) -> Array2<f32> {
         match self.activation {
-            ActivationType::Sigmoid => Sigmoid.derivative(x),
-            ActivationType::ReLU => ReLU.derivative(x),
+            ActivationType::Sigmoid => x * Sigmoid.derivative(inputs),
+            ActivationType::ReLU => x * ReLU.derivative(inputs),
             ActivationType::Softmax => Softmax.derivative(x),
         }
     }
@@ -83,25 +83,8 @@ impl ActivationTrait for Softmax {
         softmax
     }
 
-    // ChatGPT helped me with this one :)
+    // ChatGPT helped me with this one :) fuck chat gpt liam i love you
     fn derivative(&self, x: &Array2<f32>) -> Array2<f32> {
-        /* // Compute the softmax derivative for a batch of samples
-        let softmax = self.activate(x);
-        let n = softmax.shape()[1];
-        let mut result = Array2::zeros(x.raw_dim());
-        for (i, row) in softmax.outer_iter().enumerate() {
-            for j in 0..n {
-                for k in 0..n {
-                    result[[i, j]] += if j == k {
-                        row[j] * (1.0 - row[k])
-                    } else {
-                        -row[j] * row[k]
-                    };
-                }
-            }
-        }
-
-        result */
         x.clone()
     }
 }

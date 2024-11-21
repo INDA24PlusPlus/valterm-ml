@@ -1,5 +1,3 @@
-use std::process::exit;
-
 use ndarray::{Array1, Array2, Axis};
 
 use crate::functions::error::cross_entropy_error;
@@ -24,7 +22,7 @@ impl<'a> Trainer<'a> {
     // Single epoch of training
     pub fn backprop(&mut self, inputs: &Array2<f32>, targets: &Array2<f32>) {
         let out = self.network.predict(inputs.clone());
-        println!("Predicted: {:?}", out);
+        //println!("Predicted: {:?}", out);
 
         // Initialize dE/dY
         //let mut delta = mse_derivative(&out, targets);

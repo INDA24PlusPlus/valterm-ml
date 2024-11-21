@@ -43,7 +43,7 @@ impl Layer {
     pub fn backward(&self, delta: &Array2<f32>) -> Array2<f32> {
         match &self.layer_type {
             LayerType::Dense { weights, .. } => delta.dot(&weights.t().to_owned()),
-            LayerType::Activation { activation } => activation.derivative(delta),
+            LayerType::Activation { activation } => activation.derivative(delta, &self.inputs),
         }
     }
 
@@ -66,8 +66,6 @@ impl Layer {
         }
     }
 }
-
-/// A layer in a neural network with generic activation function
 
 impl NeuralNetwork {
     pub fn new(layers: Vec<Layer>) -> NeuralNetwork {
