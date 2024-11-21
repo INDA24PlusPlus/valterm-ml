@@ -1,4 +1,4 @@
-use crate::functions::activation::{softmax, Activation};
+use crate::functions::activation::{Activation, Softmax};
 use ndarray::prelude::*;
 use ndarray_rand::rand_distr::Uniform;
 use ndarray_rand::RandomExt;
@@ -6,21 +6,20 @@ use ndarray_rand::RandomExt;
 /// A neural network with generic activation function
 #[derive(Debug)]
 pub struct NeuralNetwork<A: Activation> {
-    layers: Vec<Layer<A>>,
+    pub layers: Vec<Layer<A>>,
 }
 
 /// A layer in a neural network with generic activation function
-// TODO: Handle activation differently in last layer (?)
 #[derive(Debug)]
 pub struct Layer<A: Activation> {
-    weights: Array2<f64>,
-    biases: Array1<f64>,
-    output: bool,
-    activation: A,
+    pub weights: Array2<f32>,
+    pub biases: Array1<f32>,
+    pub output: bool,
+    pub activation: A,
 }
 
 impl<A: Activation> Layer<A> {
-    pub fn new(weights: Array2<f64>, biases: Array1<f64>, activation: A) -> Layer<A> {
+    pub fn new(weights: Array2<f32>, biases: Array1<f32>, activation: A) -> Layer<A> {
         Layer {
             weights,
             biases,
@@ -41,12 +40,12 @@ impl<A: Activation> Layer<A> {
     }
 
     /// Compute the output of the layer given the input, will apply the activation function
-    pub fn feedforward(&self, inputs: Array1<f64>) -> Array1<f64> {
+    pub fn feedforward(&self, inputs: Array1<f32>) -> Array1<f32> {
         let z = self.weights.dot(&inputs) + &self.biases;
         if self.output {
-            return softmax(&z);
+            return Softmax.activate(&z);
         }
-        z.map(|x| self.activation.activate(*x))
+        self.activation.activate(&z)
     }
 }
 
@@ -74,7 +73,7 @@ impl<A: Activation> NeuralNetwork<A> {
         NeuralNetwork::new(layers)
     }
 
-    pub fn predict(&self, inputs: Array1<f64>) -> Array1<f64> {
+    pub fn predict(&self, inputs: Array1<f32>) -> Array1<f32> {
         self.layers
             .iter()
             .fold(inputs, |acc, layer| layer.feedforward(acc))
