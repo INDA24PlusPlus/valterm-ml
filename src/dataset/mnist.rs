@@ -1,12 +1,13 @@
-use ndarray::{Array1, Array2};
+use ndarray::Array1;
 
-pub const TRAIN_SIZE: usize = 60_000;
+pub const TRAIN_SIZE: usize = 60_000; // 60_000
 pub const TEST_SIZE: usize = 10_000;
 
 pub struct Mnist {
+    pub train_labels: Vec<u8>,
     pub train: Vec<Array1<f32>>,
-    pub labels: Vec<u8>,
     pub test: Vec<Array1<f32>>,
+    pub test_labels: Vec<u8>,
 }
 
 impl Mnist {
@@ -22,16 +23,31 @@ impl Mnist {
 
         Mnist {
             train,
-            labels: mnist.trn_lbl.to_vec(),
+            train_labels: mnist.trn_lbl.to_vec(),
             test,
+            test_labels: mnist.tst_lbl.to_vec(),
         }
     }
 }
 
 fn format_img(img: &[u8], samples: usize) -> Vec<Array1<f32>> {
-    let img = Array2::from_shape_vec((28 * 28, samples), img.to_vec())
-        .expect("Failed to reshape image data")
-        .map(|x| *x as f32 / 256.);
+    // Reshape the images to a vector of 1D arrays
+    img.chunks(28 * 28)
+        .take(samples)
+        .map(|chunk| {
+            let mut arr = Array1::zeros(28 * 28);
+            for (i, &x) in chunk.iter().enumerate() {
+                arr[i] = x as f32 / 256.0;
+            }
 
-    img.columns().into_iter().map(|x| x.to_owned()).collect()
+            arr
+        })
+        .collect()
+}
+
+pub fn format_label(label: u8) -> Array1<f32> {
+    let mut arr = Array1::zeros(10);
+    arr[label as usize] = 1.;
+
+    arr
 }

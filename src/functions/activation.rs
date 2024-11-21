@@ -1,6 +1,40 @@
 use ndarray::{Array1, Array2};
 
-pub trait Activation: Clone + Copy + Default {
+#[derive(Debug)]
+pub enum ActivationType {
+    Sigmoid,
+    ReLU,
+    Softmax,
+}
+
+#[derive(Debug)]
+pub struct Activation {
+    pub activation: ActivationType,
+}
+
+impl Activation {
+    pub fn new(activation: ActivationType) -> Activation {
+        Activation { activation }
+    }
+
+    pub fn activate(&self, x: &Array1<f32>) -> Array1<f32> {
+        match self.activation {
+            ActivationType::Sigmoid => Sigmoid.activate(x),
+            ActivationType::ReLU => ReLU.activate(x),
+            ActivationType::Softmax => Softmax.activate(x),
+        }
+    }
+
+    pub fn derivative(&self, x: &Array1<f32>) -> Array1<f32> {
+        match self.activation {
+            ActivationType::Sigmoid => Sigmoid.derivative(x),
+            ActivationType::ReLU => ReLU.derivative(x),
+            ActivationType::Softmax => Softmax.derivative(x),
+        }
+    }
+}
+
+pub trait ActivationTrait: Clone + Copy + Default {
     fn activate(&self, x: &Array1<f32>) -> Array1<f32>;
     fn derivative(&self, x: &Array1<f32>) -> Array1<f32>;
 }
@@ -12,7 +46,7 @@ pub struct ReLU;
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Softmax;
 
-impl Activation for Sigmoid {
+impl ActivationTrait for Sigmoid {
     fn activate(&self, x: &Array1<f32>) -> Array1<f32> {
         x.mapv(|v| 1.0 / (1.0 + (-v).exp()))
     }
@@ -23,7 +57,7 @@ impl Activation for Sigmoid {
     }
 }
 
-impl Activation for ReLU {
+impl ActivationTrait for ReLU {
     fn activate(&self, x: &Array1<f32>) -> Array1<f32> {
         x.mapv(|v| if v > 0.0 { v } else { 0.0 })
     }
@@ -33,7 +67,7 @@ impl Activation for ReLU {
     }
 }
 
-impl Activation for Softmax {
+impl ActivationTrait for Softmax {
     fn activate(&self, x: &Array1<f32>) -> Array1<f32> {
         let max = x.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
         let exps = x.map(|v| (v - max).exp());
